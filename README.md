@@ -1,8 +1,7 @@
-## How to user
+## How to use
 
  1. include the pom dependency:
 > 
-    <dependency>
     <groupId>it.gov.pagopa.tkm</groupId>
     <artifactId>common</artifactId>
     <version>version</version>
