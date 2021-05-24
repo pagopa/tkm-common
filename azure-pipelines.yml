@@ -35,7 +35,7 @@ stages:
             script: |
               version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -s $(settingsxml.secureFilePath))
               echo "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
-              echo "##vso[task.setvariable variable=pomversiontest;isOutput=true]$version"
+              echo "##vso[task.setvariable variable=pomversiontest]$version"
               echo "Current Project Version ${version}"
             failOnStderr: true
         - task: GitHubRelease@1
