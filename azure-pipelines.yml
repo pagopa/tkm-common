@@ -11,6 +11,7 @@ pr: none
 variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
+  name: outputpomversion
 
 stages:
 - stage: Build
@@ -57,6 +58,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "Current Project Version ${outputpomversion}"
+          echo "Current Project Version ${$version}"
         failOnStderr: true
     - task: GitHubRelease@1
       inputs:
@@ -64,4 +66,4 @@ stages:
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         tagSource: 'userSpecifiedTag'
-        tag: $($version)
+        tag: $(outputpomversion)
