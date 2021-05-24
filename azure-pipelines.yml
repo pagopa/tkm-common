@@ -46,7 +46,5 @@ stages:
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         target: '$(Build.SourceVersion)'
-        tagSource: 'gitTag'
-        tagPattern: 'tkm-common'
-        changeLogCompareToRelease: 'lastFullRelease'
-        changeLogType: 'commitBased'
+        tagSource: 'manual'
+        tag: $(Build.BuildNumber)
