@@ -52,7 +52,7 @@ stages:
         failOnStderr: true
     - task: Bash@3
       displayName: Get POM version
-      name: getpomversion
+      name: echopom
       inputs:
         targetType: 'inline'
         script: |
