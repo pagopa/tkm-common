@@ -19,7 +19,7 @@ stages:
     - job: POM
       displayName: POM
       pool:
-        vmImage: $(vmImageNameDefault)
+        vmImage: $(vmImageName)
       steps:
         - task: DownloadSecureFile@1
           displayName: 'download settings.xml for Maven'
