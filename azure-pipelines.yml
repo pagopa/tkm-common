@@ -51,13 +51,13 @@ stages:
           echo "Current Project Version ${version}"
         failOnStderr: true
     - task: Bash@3
-        displayName: Get POM version
-        name: getpomversion
-        inputs:
-          targetType: 'inline'
-          script: |
-            echo "Current Project Version ${outputpomversion}"
-          failOnStderr: true
+      displayName: Get POM version
+      name: getpomversion
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Current Project Version ${outputpomversion}"
+        failOnStderr: true
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: 'githubTag'
