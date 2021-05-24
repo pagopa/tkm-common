@@ -40,11 +40,21 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: true
         sonarQubeRunAnalysis: false
+    - task: Bash@3
+        displayName: Get POM version
+        name: getpomversion
+        condition:  eq(variables.isToDeploy, true)
+        inputs:
+          targetType: 'inline'
+          script: |
+            version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -s $(settingsxml.secureFilePath))
+            echo "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
+            echo "Current Project Version ${version}"
+          failOnStderr: true
     - task: GitHubRelease@1
       inputs:
-        gitHubConnection: 'testgithub'
+        gitHubConnection: 'githubTag'
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
-        target: '$(Build.SourceVersion)'
         tagSource: 'userSpecifiedTag'
-        tag: $(Build.BuildNumber)
+        tag: $(outputpomversion)
