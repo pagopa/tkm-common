@@ -50,10 +50,18 @@ stages:
           echo "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
           echo "Current Project Version ${version}"
         failOnStderr: true
+    - task: Bash@3
+        displayName: Get POM version
+        name: getpomversion
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "Current Project Version ${outputpomversion}"
+          failOnStderr: true
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: 'githubTag'
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         tagSource: 'userSpecifiedTag'
-        tag: $(getpomversion.out)
+        tag: $($version)
