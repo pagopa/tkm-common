@@ -56,4 +56,4 @@ stages:
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         tagSource: 'userSpecifiedTag'
-        tag: '$(getpomversion.out)'
+        tag: $(getpomversion.out)
