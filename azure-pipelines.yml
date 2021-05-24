@@ -39,6 +39,8 @@ stages:
             failOnStderr: true
 - stage: Build
   displayName: Build stage
+  variables:
+    pomversion: $[ stageDependencies.POM.POM.outputs['getpomversion.outputpomversion'] ]
   jobs:
   - job: Build
     displayName: Build
@@ -70,4 +72,4 @@ stages:
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         tagSource: 'userSpecifiedTag'
-        tag: $[ stageDependencies.POM.POM.outputs['getpomversion.outputpomversion'] ]
+        tag: $(pomversion)
