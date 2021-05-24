@@ -11,7 +11,7 @@ pr: none
 variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
-
+  pomversiontest: 'ciao'
 stages:
 - stage: POM
   displayName: POM
@@ -35,16 +35,16 @@ stages:
             script: |
               version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -s $(settingsxml.secureFilePath))
               echo "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
+              echo "##vso[task.setvariable variable=pomversiontest;isOutput=true]$version"
               echo "Current Project Version ${version}"
             failOnStderr: true
-        - task: Bash@3
-          displayName: Get POM version
-          name: getpomversion2
+        - task: GitHubRelease@1
           inputs:
-            targetType: 'inline'
-            script: |
-              echo "Current Project Version ${getpomversion.outputpomversion}"
-            failOnStderr: true
+            gitHubConnection: 'githubTag'
+            repositoryName: '$(Build.Repository.Name)'
+            action: 'create'
+            tagSource: 'userSpecifiedTag'
+            tag: $(pomversiontest)
 - stage: Build
   displayName: Build stage
   variables:
