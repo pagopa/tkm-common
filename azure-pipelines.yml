@@ -11,9 +11,33 @@ pr: none
 variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
-  name: outputpomversion
 
 stages:
+- stage: POM
+  displayName: POM
+  jobs:
+    - job: POM
+      displayName: POM
+      pool:
+        vmImage: $(vmImageNameDefault)
+      steps:
+        - task: DownloadSecureFile@1
+          displayName: 'download settings.xml for Maven'
+          name: settingsxml
+          inputs:
+            secureFile: 'settings.xml'
+            retryCount: '2'
+        - task: Bash@3
+          displayName: Get POM version
+          name: getpomversion
+          condition:  eq(variables.isToDeploy, true)
+          inputs:
+            targetType: 'inline'
+            script: |
+              version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -s $(settingsxml.secureFilePath))
+              echo "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
+              echo "Current Project Version ${version}"
+            failOnStderr: true
 - stage: Build
   displayName: Build stage
   jobs:
@@ -41,29 +65,10 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: true
         sonarQubeRunAnalysis: false
-    - task: Bash@3
-      displayName: Get POM version
-      name: getpomversion
-      inputs:
-        targetType: 'inline'
-        script: |
-          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -s $(settingsxml.secureFilePath))
-          Write-Host "##vso[task.setvariable variable=outputpomversion;isOutput=true]$version"
-          echo "Current Project Version ${version}"
-        failOnStderr: true
-    - task: Bash@3
-      displayName: Get POM version
-      name: echopom
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "Current Project Version ${outputpomversion}"
-          echo "Current Project Version ${version}"
-        failOnStderr: true
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: 'githubTag'
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         tagSource: 'userSpecifiedTag'
-        tag: $(outputpomversion)
+        tag: $[ stageDependencies.POM.POM.outputs['getpomversion.outputpomversion'] ]
