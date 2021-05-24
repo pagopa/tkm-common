@@ -42,9 +42,9 @@ stages:
         sonarQubeRunAnalysis: false
     - task: GitHubRelease@1
         inputs:
-        gitHubConnection: 'testgithub'
-        repositoryName: '$(Build.Repository.Name)'
-        action: 'userSpecifiedTag'
-        target: '$(Build.SourceVersion)'
-        tagSource: 'manual'
-        tag: $(Build.BuildNumber)
+          gitHubConnection: 'testgithub'
+          repositoryName: '$(Build.Repository.Name)'
+          action: 'userSpecifiedTag'
+          target: '$(Build.SourceVersion)'
+          tagSource: 'manual'
+          tag: $(Build.BuildNumber)
