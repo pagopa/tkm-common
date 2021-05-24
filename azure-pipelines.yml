@@ -58,7 +58,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "Current Project Version ${outputpomversion}"
-          echo "Current Project Version ${$version}"
+          echo "Current Project Version ${version}"
         failOnStderr: true
     - task: GitHubRelease@1
       inputs:
