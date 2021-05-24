@@ -43,7 +43,6 @@ stages:
     - task: Bash@3
       displayName: Get POM version
       name: getpomversion
-      condition:  eq(variables.isToDeploy, true)
       inputs:
         targetType: 'inline'
         script: |
