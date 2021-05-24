@@ -38,13 +38,13 @@ stages:
               echo "Current Project Version ${version}"
             failOnStderr: true
         - task: Bash@3
-            displayName: Get POM version
-            name: getpomversion2
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "Current Project Version ${getpomversion.outputpomversion}"
-              failOnStderr: true
+          displayName: Get POM version
+          name: getpomversion2
+          inputs:
+            targetType: 'inline'
+            script: |
+              echo "Current Project Version ${getpomversion.outputpomversion}"
+            failOnStderr: true
 - stage: Build
   displayName: Build stage
   variables:
