@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include
+            resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <property resource="application.yml"/>
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    <springProperty scope="context" name="CONSOLE_LOG_PATTERN" source="logging.pattern.level"/>
+
+    <!--    <property name="CONSOLE_LOG_PATTERN"-->
+    <!--              value="%d{yyyy-MM-dd HH:mm:ss.SSSZZ} [${appName:-}] %highlight(%-5level) [%t] %magenta([%X{user-id}/%X{request-id}/%X{apim-request-id}]) %green([%c{32}.%M]) - %msg%n"/>-->
+
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSSZZ} [${appName:-}] %highlight(%-5level) [%t] %magenta([%X{user-id}/%X{request-id}/%X{apim-request-id}]) %green([%c{32}.%M]) - %msg%n"/>
+
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder
+                class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_STDOUT"
+              class="ch.qos.logback.classic.AsyncAppender">
+        <neverBlock>true</neverBlock>
+        <queueSize>20000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <if condition='"TRUE".equals("${ENABLE_FILE_APPENDER:FALSE}")'>
+        <then>
+            <property name="LOG_FILE"
+                      value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring.log}"/>
+            <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
+
+
+            <appender name="ASYNC_FILE"
+                      class="ch.qos.logback.classic.AsyncAppender">
+                <neverBlock>true</neverBlock>
+                <queueSize>20000</queueSize>
+                <discardingThreshold>0</discardingThreshold>
+                <appender-ref ref="FILE"/>
+            </appender>
+
+            <root level="INFO">
+                <appender-ref ref="ASYNC_FILE"/>
+            </root>
+
+            <logger name="org.springframework.aop.interceptor.PerformanceMonitorInterceptor" level="TRACE">
+                <appender-ref ref="ASYNC_FILE"/>
+            </logger>
+        </then>
+    </if>
+
+    <if condition='"TRUE".equals("${ENABLE_KAFKA_APPENDER}")'>
+        <then>
+            <!-- This is the kafkaAppender -->
+            <appender name="kafkaAppender"
+                      class="com.github.danielwegener.logback.kafka.KafkaAppender">
+                <encoder>
+                    <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+                </encoder>
+                <topic>${KAFKA_APPENDER_TOPIC}</topic>
+                <keyingStrategy
+                        class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy"/>
+                <deliveryStrategy
+                        class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+
+                <!-- Optional parameter to use a fixed partition -->
+                <!-- <partition>0</partition> -->
+
+                <!-- Optional parameter to include log timestamps into the kafka message -->
+                <!-- <appendTimestamp>true</appendTimestamp> -->
+
+                <!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
+                <!-- bootstrap.servers is the only mandatory producerConfig -->
+                <producerConfig>bootstrap.servers=${KAFKA_APPENDER_BOOTSTRAP_SERVERS}</producerConfig>
+                <producerConfig>acks=${KAFKA_APPENDER_ACKS:-1}</producerConfig>
+                <producerConfig>metadata.max.age.ms=${KAFKA_APPENDER_METADATA_MAX_AGE_MS:-300000}</producerConfig>
+                <producerConfig>connections.max.idle.ms=${KAFKA_APPENDER_CONN_MAX_IDLE_MS:-300000}</producerConfig>
+                <producerConfig>retries=${KAFKA_APPENDER_RETRIES:-3}</producerConfig>
+                <producerConfig>request.timeout.ms=${KAFKA_APPENDER_REQUEST_TIMEOUT_MS:-6000}</producerConfig>
+                <producerConfig>security.protocol=${KAFKA_APPENDER_SECURITY_PROTOCOL:-PLAINTEXT}</producerConfig>
+                <producerConfig>sasl.mechanism=${KAFKA_APPENDER_SASL_MECHANISM:-PLAIN}</producerConfig>
+                <producerConfig>sasl.jaas.config=${KAFKA_APPENDER_SASL_JAAS_CONFIG:-null}</producerConfig>
+                <producerConfig>client.id=${appName}-log</producerConfig>
+                <producerConfig>block.on.buffer.full=false</producerConfig>
+            </appender>
+
+            <appender name="ASYNC_KAFKA"
+                      class="ch.qos.logback.classic.AsyncAppender">
+                <neverBlock>true</neverBlock>
+                <queueSize>20000</queueSize>
+                <discardingThreshold>0</discardingThreshold>
+                <appender-ref ref="kafkaAppender"/>
+            </appender>
+
+            <root level="INFO">
+                <appender-ref ref="ASYNC_STDOUT"/>
+                <appender-ref ref="kafkaAppender"/>
+            </root>
+
+            <logger name="org.springframework.aop.interceptor.PerformanceMonitorInterceptor" level="TRACE">
+                <appender-ref ref="ASYNC_STDOUT"/>
+                <appender-ref ref="kafkaAppender"/>
+            </logger>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="ASYNC_STDOUT"/>
+            </root>
+
+            <logger name="org.springframework.aop.interceptor.PerformanceMonitorInterceptor" level="TRACE">
+                <appender-ref ref="ASYNC_STDOUT"/>
+            </logger>
+        </else>
+    </if>
+</configuration>
