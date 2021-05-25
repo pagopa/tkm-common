@@ -9,6 +9,7 @@ import org.springframework.format.AnnotationFormatterFactory;
 import org.springframework.format.Formatter;
 import org.springframework.format.Parser;
 import org.springframework.format.Printer;
+import org.springframework.lang.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,17 +26,19 @@ public class StringFormatFormatterFactory extends EmbeddedValueResolutionSupport
     }
 
     @Override
+    @NonNull
     public Set<Class<?>> getFieldTypes() {
         return FIELD_TYPES;
     }
 
     @Override
-    public Printer<?> getPrinter(StringFormat annotation, Class<?> fieldType) {
+    @NonNull
+    public Printer<?> getPrinter(@NonNull StringFormat annotation, @NonNull Class<?> fieldType) {
         return getFormatter(annotation);
     }
 
     @Override
-    public Parser<?> getParser(StringFormat annotation, Class<?> fieldType) {
+    public Parser<?> getParser(@NonNull StringFormat annotation, @NonNull Class<?> fieldType) {
         return getFormatter(annotation);
     }
 

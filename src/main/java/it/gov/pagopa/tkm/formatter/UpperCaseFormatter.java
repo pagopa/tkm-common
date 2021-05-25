@@ -1,17 +1,22 @@
 package it.gov.pagopa.tkm.formatter;
 
 import org.springframework.format.Formatter;
+import org.springframework.lang.*;
 
 import java.util.Locale;
 
 public class UpperCaseFormatter implements Formatter<String> {
+
     @Override
-    public String parse(String s, Locale locale) {
-        return s != null ? s.toUpperCase() : null;
+    @NonNull
+    public String parse(@NonNull String s, @NonNull Locale locale) {
+        return s.toUpperCase();
     }
 
     @Override
-    public String print(String s, Locale locale) {
-        return s != null ? s.toUpperCase() : null;
+    @NonNull
+    public String print(@NonNull String s, @NonNull Locale locale) {
+        return s.toUpperCase();
     }
+
 }
