@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface StringFormat {
-    StringFormatEnum value() default StringFormatEnum.none;
+    StringFormatEnum value() default StringFormatEnum.NONE;
 }

@@ -31,19 +31,19 @@ public class StringFormatFormatterFactory extends EmbeddedValueResolutionSupport
 
     @Override
     public Printer<?> getPrinter(StringFormat annotation, Class<?> fieldType) {
-        return getFormatter(annotation, fieldType);
+        return getFormatter(annotation);
     }
 
     @Override
     public Parser<?> getParser(StringFormat annotation, Class<?> fieldType) {
-        return getFormatter(annotation, fieldType);
+        return getFormatter(annotation);
     }
 
-    private Formatter<String> getFormatter(StringFormat annotation, Class<?> fieldType) {
+    private Formatter<String> getFormatter(StringFormat annotation) {
         switch (annotation.value()) {
             case UPPERCASE:
                 return new UpperCaseFormatter();
-            case lowcase:
+            case LOWERCASE:
                 return new LowerCaseFormatter();
             default:
                 return new NoneFormatter();
