@@ -1,6 +1,6 @@
-##Description
+## Description
 
-The tkm common contains all the resources, classes, annotations shared between more microservices
+Tkm-common contains resources, classes and annotations shared between microservices
 
 ## How to use
 
@@ -10,9 +10,9 @@ The tkm common contains all the resources, classes, annotations shared between m
     <artifactId>common</artifactId>
     <version>version</version>
 
- 1. Import the configuration class
+ 1. Import the configuration class in the main class of the microservice
  > @Import(CustomAnnotation.class)
  
  2. use it
- >  @StringFormat(UPPERCASE)
- >  @StringFormat(lower)
+ >  @StringFormat(StringFormatEnum.UPPERCASE)
+ >  @StringFormat(StringFormatEnum.LOWERCASE)

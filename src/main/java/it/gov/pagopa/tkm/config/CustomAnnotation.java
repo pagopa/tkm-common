@@ -9,8 +9,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @Configuration
 public class CustomAnnotation implements WebMvcConfigurer {
+
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addFormatterForFieldAnnotation(new StringFormatFormatterFactory());
     }
+
 }
