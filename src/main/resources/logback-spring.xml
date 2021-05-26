@@ -59,8 +59,11 @@
             <!-- This is the kafkaAppender -->
             <appender name="kafkaAppender"
                       class="com.github.danielwegener.logback.kafka.KafkaAppender">
-                <encoder>
-                    <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+<!--                <encoder>-->
+<!--                    <pattern>${CONSOLE_LOG_PATTERN}</pattern>-->
+<!--                </encoder>-->
+                <!-- Doc Logstash encoder https://github.com/logstash/logstash-logback-encoder#usage-->
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 </encoder>
                 <topic>${KAFKA_APPENDER_TOPIC}</topic>
                 <keyingStrategy
