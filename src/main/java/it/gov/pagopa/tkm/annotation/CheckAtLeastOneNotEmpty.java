@@ -1,7 +1,5 @@
 package it.gov.pagopa.tkm.annotation;
 
-import org.yaml.snakeyaml.introspector.*;
-
 import javax.validation.*;
 
 import static java.lang.annotation.ElementType.TYPE;
@@ -11,11 +9,14 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.*;
+
 @Target({TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = CheckAtLeastOneNotNull.CheckAtLeastOneNotNullValidator.class)
+@Constraint(validatedBy = CheckAtLeastOneNotEmpty.CheckAtLeastOneNotEmptyValidator.class)
 @Documented
-public @interface CheckAtLeastOneNotNull {
+public @interface CheckAtLeastOneNotEmpty {
 
     String message() default "Validation failed: at least one required field is not present";
 
@@ -25,11 +26,11 @@ public @interface CheckAtLeastOneNotNull {
 
     String[] fieldNames();
 
-    class CheckAtLeastOneNotNullValidator implements ConstraintValidator<CheckAtLeastOneNotNull, Object> {
+    class CheckAtLeastOneNotEmptyValidator implements ConstraintValidator<CheckAtLeastOneNotEmpty, Object> {
 
         private String[] fieldNames;
 
-        public void initialize(CheckAtLeastOneNotNull constraintAnnotation) {
+        public void initialize(CheckAtLeastOneNotEmpty constraintAnnotation) {
             this.fieldNames = constraintAnnotation.fieldNames();
         }
 
@@ -39,9 +40,9 @@ public @interface CheckAtLeastOneNotNull {
             }
             try {
                 for (String fieldName : fieldNames) {
-                    PropertyUtils propertyUtils = new PropertyUtils();
-                    Object property = propertyUtils.getProperty((Class<?>) object, fieldName);
-                    if (property != null) {
+                    Object property = PropertyUtils.getProperty(object, fieldName);
+                    if (property instanceof String && StringUtils.isNotBlank((String) property)
+                            || !(property instanceof String) && property != null) {
                         return true;
                     }
                 }
