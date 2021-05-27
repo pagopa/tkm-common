@@ -6,6 +6,9 @@
     <springProperty scope="context" name="appName" source="spring.application.name"/>
     <springProperty scope="context" name="CONSOLE_LOG_PATTERN" source="logging.pattern.level"/>
 
+    <!--    WARNING!! If the log level is set on DEBUG/TRACE the client goes to deadlock. Do not edit!!! -->
+    <logger name="org.apache.kafka" level="info"/>
+
     <!--    <property name="CONSOLE_LOG_PATTERN"-->
     <!--              value="%d{yyyy-MM-dd HH:mm:ss.SSSZZ} [${appName:-}] %highlight(%-5level) [%t] %magenta([%X{user-id}/%X{request-id}/%X{apim-request-id}]) %green([%c{32}.%M]) - %msg%n"/>-->
 
@@ -52,13 +55,14 @@
 
     <if condition='"TRUE".equals("${ENABLE_KAFKA_APPENDER}")'>
         <then>
-            <springProperty scope="context" name="KAFKA_APPENDER_SASL_JAAS_CONFIG" source="keyvault.eventhubLogSaslJaasConfig" defaultValue="null"/>
+            <springProperty scope="context" name="KAFKA_APPENDER_SASL_JAAS_CONFIG"
+                            source="keyvault.eventhubLogSaslJaasConfig" defaultValue="null"/>
             <!-- This is the kafkaAppender -->
             <appender name="kafkaAppender"
                       class="com.github.danielwegener.logback.kafka.KafkaAppender">
-<!--                <encoder>-->
-<!--                    <pattern>${CONSOLE_LOG_PATTERN}</pattern>-->
-<!--                </encoder>-->
+                <!--                <encoder>-->
+                <!--                    <pattern>${CONSOLE_LOG_PATTERN}</pattern>-->
+                <!--                </encoder>-->
                 <!-- Doc Logstash encoder https://github.com/logstash/logstash-logback-encoder#usage-->
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 </encoder>
