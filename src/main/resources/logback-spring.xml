@@ -52,7 +52,7 @@
 
     <if condition='"TRUE".equals("${ENABLE_KAFKA_APPENDER}")'>
         <then>
-            <springProperty scope="context" name="KAFKA_APPENDER_SASL_JAAS_CONFIG" source="eventhubLogSaslJaasConfig" defaultValue="null"/>
+            <springProperty scope="context" name="KAFKA_APPENDER_SASL_JAAS_CONFIG" source="keyvault.eventhubLogSaslJaasConfig" defaultValue="null"/>
             <!-- This is the kafkaAppender -->
             <appender name="kafkaAppender"
                       class="com.github.danielwegener.logback.kafka.KafkaAppender">
