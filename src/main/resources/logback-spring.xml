@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <include
-            resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <property resource="application.yml"/>
     <springProperty scope="context" name="appName" source="spring.application.name"/>
@@ -13,16 +12,14 @@
     <property name="FILE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSSZZ} [${appName:-}] %highlight(%-5level) [%t] %magenta([%X{user-id}/%X{request-id}/%X{apim-request-id}]) %green([%c{32}.%M]) - %msg%n"/>
 
-    <appender name="STDOUT"
-              class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <appender name="ASYNC_STDOUT"
-              class="ch.qos.logback.classic.AsyncAppender">
+    <appender name="ASYNC_STDOUT" class="ch.qos.logback.classic.AsyncAppender">
         <neverBlock>true</neverBlock>
         <queueSize>20000</queueSize>
         <discardingThreshold>0</discardingThreshold>
@@ -34,7 +31,6 @@
             <property name="LOG_FILE"
                       value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring.log}"/>
             <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
-
 
             <appender name="ASYNC_FILE"
                       class="ch.qos.logback.classic.AsyncAppender">
@@ -56,6 +52,7 @@
 
     <if condition='"TRUE".equals("${ENABLE_KAFKA_APPENDER}")'>
         <then>
+            <springProperty scope="context" name="KAFKA_APPENDER_SASL_JAAS_CONFIG" source="eventhubLogSaslJaasConfig" defaultValue="null"/>
             <!-- This is the kafkaAppender -->
             <appender name="kafkaAppender"
                       class="com.github.danielwegener.logback.kafka.KafkaAppender">
@@ -79,6 +76,7 @@
 
                 <!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
                 <!-- bootstrap.servers is the only mandatory producerConfig -->
+
                 <producerConfig>bootstrap.servers=${KAFKA_APPENDER_BOOTSTRAP_SERVERS}</producerConfig>
                 <producerConfig>acks=${KAFKA_APPENDER_ACKS:-1}</producerConfig>
                 <producerConfig>metadata.max.age.ms=${KAFKA_APPENDER_METADATA_MAX_AGE_MS:-300000}</producerConfig>
@@ -89,7 +87,6 @@
                 <producerConfig>sasl.mechanism=${KAFKA_APPENDER_SASL_MECHANISM:-PLAIN}</producerConfig>
                 <producerConfig>sasl.jaas.config=${KAFKA_APPENDER_SASL_JAAS_CONFIG:-null}</producerConfig>
                 <producerConfig>client.id=${appName}-log</producerConfig>
-                <producerConfig>block.on.buffer.full=false</producerConfig>
             </appender>
 
             <appender name="ASYNC_KAFKA"
