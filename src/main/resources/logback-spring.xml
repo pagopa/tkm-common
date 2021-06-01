@@ -65,6 +65,7 @@
                 <!--                </encoder>-->
                 <!-- Doc Logstash encoder https://github.com/logstash/logstash-logback-encoder#usage-->
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <includeContext>false</includeContext>
                 </encoder>
                 <topic>${KAFKA_APPENDER_TOPIC}</topic>
                 <keyingStrategy
