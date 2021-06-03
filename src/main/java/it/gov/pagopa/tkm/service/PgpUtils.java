@@ -1,22 +1,20 @@
 package it.gov.pagopa.tkm.service;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.*;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.CompressionAlgorithmTags;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.jce.provider.*;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.jcajce.*;
 import org.bouncycastle.util.io.Streams;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
 
-import javax.annotation.PostConstruct;
+import javax.annotation.*;
 import java.io.*;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
 @Service
 public class PgpUtils {
@@ -35,63 +33,61 @@ public class PgpUtils {
     private final BouncyCastleProvider provider = new BouncyCastleProvider();
 
     @PostConstruct
-    public void init() throws IOException, PGPException {
+    public void init() throws Exception {
         publicKey = readPublicKey(new ByteArrayInputStream(publicKeyFromKeyVault.getBytes()));
     }
 
     public String encrypt(String message) throws PGPException {
-
-        final ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes());
-        final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        final PGPLiteralDataGenerator literal = new PGPLiteralDataGenerator();
-        final PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
-        try (final OutputStream pOut =
-                     literal.open(comData.open(bOut), PGPLiteralData.BINARY, "filename", in.available(), new Date())) {
+        try {
+            final ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes());
+            final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            final PGPLiteralDataGenerator literal = new PGPLiteralDataGenerator();
+            final PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
+            final OutputStream pOut =
+                    literal.open(comData.open(bOut), PGPLiteralData.BINARY, "filename", in.available(), new Date());
             Streams.pipeAll(in, pOut);
-        } catch (Exception e) {
-            throw new PGPException("Error in encrypt", e);
-        }
-        final byte[] bytes = bOut.toByteArray();
-        final PGPEncryptedDataGenerator generator = new PGPEncryptedDataGenerator(
-                new JcePGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.AES_256).setWithIntegrityPacket(true)
-                        .setSecureRandom(
-                                new SecureRandom())
+            comData.close();
+            final byte[] bytes = bOut.toByteArray();
+            final PGPEncryptedDataGenerator generator = new PGPEncryptedDataGenerator(
+                    new JcePGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.AES_256).setWithIntegrityPacket(true)
+                            .setSecureRandom(
+                                    new SecureRandom())
 
-        );
-        generator.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(publicKey));
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        OutputStream theOut = new ArmoredOutputStream(out);
-        try (OutputStream cOut = generator.open(theOut, bytes.length)) {
+            );
+            generator.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(publicKey));
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            OutputStream theOut = new ArmoredOutputStream(out);
+            OutputStream cOut = generator.open(theOut, bytes.length);
             cOut.write(bytes);
+            cOut.close();
             theOut.close();
             return out.toString();
         } catch (Exception e) {
             throw new PGPException("Error in encrypt", e);
         }
-
     }
 
     private PGPPublicKey readPublicKey(InputStream in) throws IOException, PGPException {
         PGPPublicKeyRingCollection keyRingCollection = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(in), new JcaKeyFingerprintCalculator());
-        PGPPublicKey pgpPublicKey = null;
+        PGPPublicKey publicKey = null;
         Iterator<PGPPublicKeyRing> rIt = keyRingCollection.getKeyRings();
-        while (pgpPublicKey == null && rIt.hasNext()) {
+        while (publicKey == null && rIt.hasNext()) {
             PGPPublicKeyRing kRing = rIt.next();
             Iterator<PGPPublicKey> kIt = kRing.getPublicKeys();
-            while (pgpPublicKey == null && kIt.hasNext()) {
+            while (publicKey == null && kIt.hasNext()) {
                 PGPPublicKey key = kIt.next();
                 if (key.isEncryptionKey()) {
-                    pgpPublicKey = key;
+                    publicKey = key;
                 }
             }
         }
-        if (pgpPublicKey == null) {
+        if (publicKey == null) {
             throw new IllegalArgumentException("Can't find public key in the key ring.");
         }
-        return pgpPublicKey;
+        return publicKey;
     }
 
-    public String decrypt(String encryptedMessage) throws IOException, PGPException {
+    public String decrypt(String encryptedMessage) throws Exception {
         if (StringUtils.isBlank(encryptedMessage)) {
             return null;
         }
@@ -140,4 +136,3 @@ public class PgpUtils {
     }
 
 }
-
