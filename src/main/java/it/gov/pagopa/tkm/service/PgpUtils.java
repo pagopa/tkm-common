@@ -21,9 +21,6 @@ import java.util.Iterator;
 @Service
 public class PgpUtils {
 
-    private PgpUtils() {
-    }
-
     @Value("${keyvault.readQueuePrvPgpKey}")
     private String privateKey;
 
