@@ -20,6 +20,10 @@ public @interface CheckAtLeastOneNotEmpty {
 
     String message() default "Validation failed: at least one required field is not present";
 
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+
     String[] fieldNames();
 
     class CheckAtLeastOneNotEmptyValidator implements ConstraintValidator<CheckAtLeastOneNotEmpty, Object> {
