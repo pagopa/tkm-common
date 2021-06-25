@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 @Service
+@Deprecated
 public class PgpUtils {
 
     @Value("${keyvault.readQueuePrvPgpKey}")

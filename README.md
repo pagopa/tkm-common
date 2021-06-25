@@ -22,7 +22,7 @@ Tkm-common contains resources, classes and annotations shared between microservi
   1. you can use it with target class
   > @CheckAtLeastOneNotEmpty(fieldNames = {"field1", "field2",...,"fieldn"})
  
- ### For the PgpUtils service
+ ### DEPRECATED For the PgpUtils service - Use PgpStaticUtils
   1. Import the configuration class in the main class of the microservice
   > @Import(PgpUtils.class)
   
