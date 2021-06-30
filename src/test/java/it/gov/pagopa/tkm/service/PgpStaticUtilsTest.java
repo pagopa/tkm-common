@@ -116,5 +116,12 @@ class PgpStaticUtilsTest {
         }
         return tempFile;
     }
+
+    @Test
+    void decryptMessage_success() throws IOException, PGPException {
+        String messageDecrypted = PgpStaticUtils.decryptMessage(MESSAGE_CRYPTED_PGP, privateKey, PASSPHRASE_CHARS);
+        assertEquals(MESSAGE_DECRYPTED_PGP, messageDecrypted);
+    }
+
 }
 
