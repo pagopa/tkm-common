@@ -119,10 +119,7 @@ class PgpStaticUtilsTest {
 
     @Test
     void decryptMessage_success() throws IOException, PGPException {
-        decryptMessageSuccess(MESSAGE_CRYPTED_PGP);
-    }
-
-    private void decryptMessageSuccess(String message) throws IOException, PGPException {
+        String message = MESSAGE_CRYPTED_PGP;
         PgpStaticUtils.decryptMessage(message, privateKey, PASSPHRASE_CHARS);
         String messageDecrypted = PgpStaticUtils.decryptMessage(message, privateKey, PASSPHRASE_CHARS);
         assertEquals(MESSAGE_DECRYPTED_PGP, messageDecrypted);
