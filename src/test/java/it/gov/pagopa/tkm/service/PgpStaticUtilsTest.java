@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,9 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class PgpStaticUtilsTest {
 
-    private static final char[] PASSPHRASE_CHARS = "passphrase".toCharArray();
-    private static final String MESSAGE_DECRYPTED_PGP = "message";
-    private static final String MESSAGE_CRYPTED_PGP = "-----BEGIN PGP MESSAGE-----\n" +
+    private static final String PASSPHRASE = "passphrase";
+    private static final String DECRYPTED_MESSAGE = "message";
+    private static final String ENCRYPTED_MESSAGE_PGP = "-----BEGIN PGP MESSAGE-----\n" +
             "\n" +
             "hQIMA9/2VjHdvNtGAQ//T1Xh4uuPMyqLjzBt1sicAbBNrRW3+JhQGVTG31P0kyTJ\n" +
             "w8d+p5UsMXPSojU5K0cR4H/MAu5XydIYdozdzYJXuXhWDc0YpGDYCHyl98iBB3Ff\n" +
@@ -47,66 +47,64 @@ class PgpStaticUtilsTest {
             "JHhzVSm8+LgaObtkhBn4RkxKgA==\n" +
             "=Z+Zy\n" +
             "-----END PGP MESSAGE-----";
-    private byte[] privateKey;
-    private byte[] publicKey;
-    private Random random = new Random();
+    private String privateKey;
+    private String publicKey;
+    private final Random random = new Random();
 
     @TempDir
     static Path tempDir;
 
     @BeforeAll
     void init() throws IOException {
-        privateKey = ByteStreams.toByteArray(new ClassPathResource("junit_pgp_private.asc").getInputStream());
-        publicKey = ByteStreams.toByteArray(new ClassPathResource("junit_pgp_public.asc").getInputStream());
-
+        privateKey = new String(ByteStreams.toByteArray(new ClassPathResource("junit_pgp_private.asc").getInputStream()));
+        publicKey = new String(ByteStreams.toByteArray(new ClassPathResource("junit_pgp_public.asc").getInputStream()));
     }
 
     @Test
     void decrypt_success() throws IOException, PGPException {
-        decryptSuccess(MESSAGE_CRYPTED_PGP);
+        decryptSuccess(ENCRYPTED_MESSAGE_PGP);
     }
 
     @Test
     void decrypt_noInputfile() throws IOException {
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
-        assertThrows(FileNotFoundException.class, () -> PgpStaticUtils.decrypt("", privateKey, PASSPHRASE_CHARS, fileOut));
+        assertThrows(FileNotFoundException.class, () -> PgpStaticUtils.decryptToFile("", privateKey, PASSPHRASE, fileOut));
     }
 
     @Test
     void decrypt_invalidPassphrase() throws IOException {
-        Path tempFileWithMessagePgp = createTempFileWithMessage(MESSAGE_CRYPTED_PGP);
+        Path tempFileWithMessagePgp = createTempFileWithMessage(ENCRYPTED_MESSAGE_PGP);
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
-        assertThrows(PGPException.class, () -> PgpStaticUtils.decrypt(tempFileWithMessagePgp.toFile().getAbsolutePath(), privateKey, "pwd".toCharArray(), fileOut));
+        assertThrows(PGPException.class, () -> PgpStaticUtils.decryptToFile(tempFileWithMessagePgp.toFile().getAbsolutePath(), privateKey, "pwd", fileOut));
     }
 
     @Test
     void decrypt_blankPrivateKey() throws IOException {
-        Path tempFileWithMessagePgp = createTempFileWithMessage(MESSAGE_CRYPTED_PGP);
+        Path tempFileWithMessagePgp = createTempFileWithMessage(ENCRYPTED_MESSAGE_PGP);
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
-        byte[] bytes = "".getBytes();
         String absolutePath = tempFileWithMessagePgp.toFile().getAbsolutePath();
-        assertThrows(IllegalArgumentException.class, () -> PgpStaticUtils.decrypt(absolutePath, bytes, PASSPHRASE_CHARS, fileOut));
+        assertThrows(IllegalArgumentException.class, () -> PgpStaticUtils.decryptToFile(absolutePath, "", PASSPHRASE, fileOut));
     }
 
     @Test
     void encrypt_success() throws PGPException, IOException {
-        byte[] encrypt = PgpStaticUtils.encrypt(MESSAGE_DECRYPTED_PGP.getBytes(), publicKey, true);
-        assertTrue(encrypt.length > 0);
-        decryptSuccess(new String(encrypt));
+        String encrypt = PgpStaticUtils.encrypt(DECRYPTED_MESSAGE, publicKey);
+        assertTrue(encrypt.length() > 0);
+        decryptSuccess(encrypt);
     }
 
     private void decryptSuccess(String encrypt) throws IOException, PGPException {
         Path tempFileWithMessagePgp = createTempFileWithMessage(encrypt);
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
-        PgpStaticUtils.decrypt(tempFileWithMessagePgp.toFile().getAbsolutePath(), privateKey, PASSPHRASE_CHARS, fileOut);
+        PgpStaticUtils.decryptToFile(tempFileWithMessagePgp.toFile().getAbsolutePath(), privateKey, PASSPHRASE, fileOut);
         String messageDecrypted = Files.lines(Paths.get(fileOut), StandardCharsets.UTF_8).collect(Collectors.joining(System.lineSeparator()));
         assertTrue(new File(fileOut).length() > 0);
-        assertEquals(MESSAGE_DECRYPTED_PGP, messageDecrypted);
+        assertEquals(DECRYPTED_MESSAGE, messageDecrypted);
     }
 
     @Test
     void encrypt_invalidKeyPub() {
-        assertThrows(PGPException.class, () -> PgpStaticUtils.encrypt(MESSAGE_DECRYPTED_PGP.getBytes(), "".getBytes(), true));
+        assertThrows(PGPException.class, () -> PgpStaticUtils.encrypt(DECRYPTED_MESSAGE, ""));
     }
 
     private Path createTempFileWithMessage(String message) throws IOException {
@@ -118,9 +116,9 @@ class PgpStaticUtilsTest {
     }
 
     @Test
-    void decryptMessage_success() throws IOException, PGPException {
-        String messageDecrypted = PgpStaticUtils.decryptMessage(MESSAGE_CRYPTED_PGP, privateKey, PASSPHRASE_CHARS);
-        assertEquals(MESSAGE_DECRYPTED_PGP, messageDecrypted);
+    void decryptMessage_success() throws Exception {
+        String messageDecrypted = PgpStaticUtils.decrypt(ENCRYPTED_MESSAGE_PGP, privateKey, PASSPHRASE);
+        assertEquals(DECRYPTED_MESSAGE, messageDecrypted);
     }
 
 }

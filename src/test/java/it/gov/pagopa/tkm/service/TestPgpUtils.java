@@ -22,8 +22,6 @@ public class TestPgpUtils {
     public void init() throws Exception {
         String privateKey = FileUtils.readFileToString(new File("src/test/resources/pgp_private_key_test.asc"), StandardCharsets.UTF_8);
         String publicKey = FileUtils.readFileToString(new File("src/test/resources/pgp_public_key_test.asc"), StandardCharsets.UTF_8);
-        PgpUtils.class.getDeclaredField("privateKey").setAccessible(true);
-        PgpUtils.class.getDeclaredField("publicKeyFromKeyVault").setAccessible(true);
         ReflectionTestUtils.setField(pgpUtils, "privateKey", privateKey);
         ReflectionTestUtils.setField(pgpUtils, "publicKeyFromKeyVault", publicKey);
         Method postConstruct = PgpUtils.class.getDeclaredMethod("init");
