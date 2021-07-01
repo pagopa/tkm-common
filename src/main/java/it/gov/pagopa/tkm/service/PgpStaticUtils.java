@@ -113,6 +113,9 @@ public class PgpStaticUtils {
     }
 
     public static String encrypt(String message, String publicKey) throws PGPException {
+        if (StringUtils.isBlank(message)) {
+            return null;
+        }
         try {
             final ByteArrayInputStream in = new ByteArrayInputStream(message.getBytes());
             final ByteArrayOutputStream bOut = new ByteArrayOutputStream();

@@ -21,10 +21,8 @@ Tkm-common contains resources, classes and annotations shared between microservi
  ### For the custom check annotations
   1. you can use it with target class
   > @CheckAtLeastOneNotEmpty(fieldNames = {"field1", "field2",...,"fieldn"})
- 
- ### DEPRECATED For the PgpUtils service - Use PgpStaticUtils
+
   1. Import the configuration class in the main class of the microservice
-  > @Import(PgpUtils.class)
   
   2. include in the application.yml
   > keyvault:
@@ -33,5 +31,3 @@ Tkm-common contains resources, classes and annotations shared between microservi
       readQueuePrvPgpKeyPassphrase: YOUR_VALUE (default value 'null')
       
   2. use it
-  >   @Autowired
-       private PgpUtils pgpUtils;
