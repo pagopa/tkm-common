@@ -118,10 +118,10 @@ public class PgpStaticUtils {
             final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             final PGPLiteralDataGenerator literal = new PGPLiteralDataGenerator();
             final PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
-            final OutputStream pOut =
-                    literal.open(comData.open(bOut), PGPLiteralData.BINARY, "filename", in.available(), new Date());
-            Streams.pipeAll(in, pOut);
-            comData.close();
+            try (final OutputStream pOut = literal.open(comData.open(bOut), PGPLiteralData.BINARY, "filename", in.available(), new Date())) {
+                Streams.pipeAll(in, pOut);
+                comData.close();
+            }
             final byte[] bytes = bOut.toByteArray();
             final PGPEncryptedDataGenerator generator = new PGPEncryptedDataGenerator(
                     new JcePGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.AES_256).setWithIntegrityPacket(true)
@@ -129,12 +129,12 @@ public class PgpStaticUtils {
                                     new SecureRandom())
 
             );
-            generator.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(readPublicKey(new ByteArrayInputStream(publicKey.getBytes()))));
+            generator.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(readPublicKey(publicKey.getBytes())));
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             OutputStream theOut = new ArmoredOutputStream(out);
-            OutputStream cOut = generator.open(theOut, bytes.length);
-            cOut.write(bytes);
-            cOut.close();
+            try (OutputStream cOut = generator.open(theOut, bytes.length)) {
+                cOut.write(bytes);
+            }
             theOut.close();
             return out.toString();
         } catch (Exception e) {
@@ -142,8 +142,9 @@ public class PgpStaticUtils {
         }
     }
 
-    private static PGPPublicKey readPublicKey(InputStream in) throws IOException, PGPException {
-        PGPPublicKeyRingCollection keyRingCollection = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(in), new JcaKeyFingerprintCalculator());
+    private static PGPPublicKey readPublicKey(byte[] publicKeyByte) throws IOException, PGPException {
+        InputStream decoderStream = PGPUtil.getDecoderStream(new ByteArrayInputStream(publicKeyByte));
+        PGPPublicKeyRingCollection keyRingCollection = new PGPPublicKeyRingCollection(decoderStream, new JcaKeyFingerprintCalculator());
         PGPPublicKey publicKey = null;
         Iterator<PGPPublicKeyRing> rIt = keyRingCollection.getKeyRings();
         while (publicKey == null && rIt.hasNext()) {
