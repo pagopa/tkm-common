@@ -15,7 +15,7 @@ import java.util.Arrays;
 @Component
 @Aspect
 @Log4j2
-public class PerformanceLogging {
+public class AopLogging {
 
     @Pointcut("within(@it.gov.pagopa.tkm.annotation.EnableExecutionTime *) || @annotation(it.gov.pagopa.tkm.annotation.EnableExecutionTime)")
     private void enableExecutionTimeAnnotation() {
