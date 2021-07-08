@@ -19,6 +19,9 @@ public class PgpStaticUtils {
     private PgpStaticUtils() {
     }
 
+    private static final BouncyCastleProvider provider = new BouncyCastleProvider();
+
+
     public static void decryptToFile(String fileInput, String privateKey, String passphrase, String fileOutput) throws IOException, PGPException {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(fileInput))) {
             PGPObjectFactory encryptedObjectFactory = new PGPObjectFactory(PGPUtil.getDecoderStream(inputStream), new JcaKeyFingerprintCalculator());
@@ -37,13 +40,13 @@ public class PgpStaticUtils {
                 publicKeyEncryptedData = (PGPPublicKeyEncryptedData) iterator.next();
                 PGPSecretKey secretKey = secretKeyRingCollection.getSecretKey(publicKeyEncryptedData.getKeyID());
                 if (secretKey != null) {
-                    pgpPrivateKey = secretKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider(new BouncyCastleProvider()).build(passphrase.toCharArray()));
+                    pgpPrivateKey = secretKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider(provider).build(passphrase.toCharArray()));
                 }
             }
             if (pgpPrivateKey == null) {
                 throw new IllegalArgumentException("Secret key for message not found.");
             }
-            InputStream decryptedMessageStream = publicKeyEncryptedData.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider(new BouncyCastleProvider()).build(pgpPrivateKey));
+            InputStream decryptedMessageStream = publicKeyEncryptedData.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider(provider).build(pgpPrivateKey));
             PGPObjectFactory decryptedObjectFactory = new PGPObjectFactory(decryptedMessageStream, new JcaKeyFingerprintCalculator());
             Object nextObject = decryptedObjectFactory.nextObject();
             if (nextObject instanceof PGPCompressedData) {
@@ -81,7 +84,6 @@ public class PgpStaticUtils {
         PGPPrivateKey pgpPrivateKey = null;
         PGPPublicKeyEncryptedData publicKeyEncryptedData = null;
         PGPSecretKeyRingCollection secretKeyRingCollection = new PGPSecretKeyRingCollection(PGPUtil.getDecoderStream(new ByteArrayInputStream(privateKeyBytes)), new JcaKeyFingerprintCalculator());
-        BouncyCastleProvider provider = new BouncyCastleProvider();
         while (pgpPrivateKey == null && iterator.hasNext()) {
             publicKeyEncryptedData = (PGPPublicKeyEncryptedData) iterator.next();
             PGPSecretKey secretKey = secretKeyRingCollection.getSecretKey(publicKeyEncryptedData.getKeyID());
