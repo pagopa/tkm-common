@@ -3,6 +3,7 @@ package it.gov.pagopa.tkm.service;
 
 import com.google.common.io.ByteStreams;
 import org.bouncycastle.openpgp.PGPException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,7 +69,8 @@ class PgpStaticUtilsTest {
     @Test
     void decrypt_noInputfile() throws IOException {
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
-        assertThrows(FileNotFoundException.class, () -> PgpStaticUtils.decryptToFile("", privateKey, PASSPHRASE, fileOut));
+        PGPException pgpException = assertThrows(PGPException.class, () -> PgpStaticUtils.decryptToFile("", privateKey, PASSPHRASE, fileOut));
+        Assertions.assertTrue(pgpException.getUnderlyingException() instanceof FileNotFoundException);
     }
 
     @Test
@@ -83,7 +85,8 @@ class PgpStaticUtilsTest {
         Path tempFileWithMessagePgp = createTempFileWithMessage(ENCRYPTED_MESSAGE_PGP);
         String fileOut = Files.createFile(tempDir.resolve(String.valueOf(random.nextInt()))).toFile().getAbsolutePath();
         String absolutePath = tempFileWithMessagePgp.toFile().getAbsolutePath();
-        assertThrows(IllegalArgumentException.class, () -> PgpStaticUtils.decryptToFile(absolutePath, "", PASSPHRASE, fileOut));
+        PGPException pgpException = assertThrows(PGPException.class, () -> PgpStaticUtils.decryptToFile(absolutePath, "", PASSPHRASE, fileOut));
+        Assertions.assertTrue(pgpException.getUnderlyingException() instanceof IllegalArgumentException);
     }
 
     @Test
