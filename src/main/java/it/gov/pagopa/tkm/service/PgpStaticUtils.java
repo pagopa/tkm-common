@@ -66,7 +66,7 @@ public class PgpStaticUtils {
         }
     }
 
-    public static String decrypt(String encryptedMessage, String privateKey, String passphrase) throws Exception {
+    public static String decrypt(String encryptedMessage, String privateKey, String passphrase) throws IOException, PGPException {
         if (StringUtils.isBlank(encryptedMessage)) {
             return null;
         }

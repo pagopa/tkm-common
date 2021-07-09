@@ -89,7 +89,7 @@ class PgpStaticUtilsTest {
     @Test
     void encrypt_success() throws PGPException, IOException {
         String encrypt = PgpStaticUtils.encrypt(DECRYPTED_MESSAGE, publicKey);
-        assertTrue(encrypt.length() > 0);
+        assertTrue((encrypt != null ? encrypt.length() : 0) > 0);
         decryptSuccess(encrypt);
     }
 
