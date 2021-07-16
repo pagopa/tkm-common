@@ -17,7 +17,7 @@ import java.util.Arrays;
 @Log4j2
 public class AopLogging {
 
-    @Pointcut("within(@it.gov.pagopa.tkm.annotation.EnableExecutionTime *) || @annotation(it.gov.pagopa.tkm.annotation.EnableExecutionTime)")
+    @Pointcut("@annotation(it.gov.pagopa.tkm.annotation.EnableExecutionTime)")
     private void enableExecutionTimeAnnotation() {
     }
 
