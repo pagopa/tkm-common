@@ -6,18 +6,21 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.Tracer;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
-@Component
 @Aspect
 @Log4j2
 public class AopLogging {
+    @Autowired
+    private Tracer tracer;
 
-    @Pointcut("within(@it.gov.pagopa.tkm.annotation.EnableExecutionTime *) || @annotation(it.gov.pagopa.tkm.annotation.EnableExecutionTime)")
+    @Pointcut("@annotation(it.gov.pagopa.tkm.annotation.EnableExecutionTime)")
     private void enableExecutionTimeAnnotation() {
     }
 
@@ -27,25 +30,39 @@ public class AopLogging {
 
     @Around("enableExecutionTimeAnnotation()")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        Span span = tracer.nextSpan(tracer.currentSpan()).start();
+        Tracer.SpanInScope ws = this.tracer.withSpan(span.start());
         Instant start = Instant.now();
         try {
             return joinPoint.proceed();
+        } catch (Throwable ex) {
+            span.error(ex);
+            throw ex;
         } finally {
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
             log.info(String.format("Method %s executed in %s ms", joinPoint.getSignature().getName(), timeElapsed));
+            ws.close();
+            span.end();
         }
     }
 
     @Around("enableStartEndLogAnnotation()")
     public Object startEndLog(ProceedingJoinPoint joinPoint) throws Throwable {
+        Span span = tracer.nextSpan(tracer.currentSpan()).start();
+        Tracer.SpanInScope ws = this.tracer.withSpan(span.start());
         String methodName = joinPoint.getSignature().getName();
         log.info(String.format("Start Method %s", methodName));
         log.trace("Method args: " + Arrays.toString(joinPoint.getArgs()));
         try {
             return joinPoint.proceed();
+        } catch (Throwable ex) {
+            span.error(ex);
+            throw ex;
         } finally {
             log.info(String.format("End Method %s", methodName));
+            ws.close();
+            span.end();
         }
     }
 }
