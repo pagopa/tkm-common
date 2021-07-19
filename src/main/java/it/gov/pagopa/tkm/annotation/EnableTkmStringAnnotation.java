@@ -1,6 +1,6 @@
 package it.gov.pagopa.tkm.annotation;
 
-import it.gov.pagopa.tkm.config.BatchResultConfig;
+import it.gov.pagopa.tkm.config.CustomAnnotation;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -13,6 +13,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({TYPE})
 @Retention(RUNTIME)
 @Documented
-@Import({BatchResultConfig.class})
-public @interface EnableLoggingTableResult {
+@Import({CustomAnnotation.class})
+public @interface EnableTkmStringAnnotation {
 }
