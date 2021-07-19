@@ -64,11 +64,11 @@ public class AopLoggingTableResult {
         try {
             if (proceed == null || !BaseResultDetails.class.isAssignableFrom(proceed.getClass())) {
                 log.error("Invalid table result method return " + (proceed != null ? proceed.getClass() : null));
-                if (!loggingTableResult.strict()) {
+                if (loggingTableResult.strict()) {
+                    return;
+                } else {
                     proceed = new BaseResultDetails();
                     log.warn("Proceed with empty details");
-                } else {
-                    return;
                 }
             }
             BaseResultDetails baseResultDetails = (BaseResultDetails) proceed;
