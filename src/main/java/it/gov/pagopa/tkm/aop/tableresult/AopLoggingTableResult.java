@@ -76,7 +76,7 @@ public class AopLoggingTableResult {
             String traceId = span.context().traceId();
 
             String targetBatch = StringUtils.firstNonBlank(loggingTableResult.batchName(), signatureName);
-            String executedBy = StringUtils.firstNonBlank(System.getProperty("HOSTNAME"), System.getenv("COMPUTERNAME"));
+            String executedBy = getExecutedBy();
             LoggingBatchResult loggingBatchResult = LoggingBatchResult.builder()
                     .executionTraceId(traceId)
                     .runDate(start)
@@ -91,6 +91,14 @@ public class AopLoggingTableResult {
         } catch (Exception e) {
             log.error(e);
         }
+    }
+
+    private String getExecutedBy() {
+        String executedBy = StringUtils.firstNonBlank(System.getenv("HOSTNAME"), System.getenv("COMPUTERNAME"));
+        if(StringUtils.isBlank(executedBy)){
+            log.warn("executedBy cannot be resolved. Please set HOSTNAME or COMPUTERNAME");
+        }
+        return executedBy;
     }
 
     private LoggingTableResult getLoggingTableResultAnnotation(ProceedingJoinPoint joinPoint) throws NoSuchMethodException {
