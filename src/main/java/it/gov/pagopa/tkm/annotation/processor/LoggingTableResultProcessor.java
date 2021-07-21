@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -19,15 +18,13 @@ import java.util.Set;
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class LoggingTableResultProcessor extends AbstractProcessor {
-
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(LoggingTableResult.class)) {
-            if (element.getKind() == ElementKind.METHOD && invalidReturnType(element)) {
+            if (invalidReturnType(element)) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -37,7 +34,7 @@ public class LoggingTableResultProcessor extends AbstractProcessor {
         if (isInvalidType(returnType)) {
             Diagnostic.Kind kind = Diagnostic.Kind.ERROR;
             String warningMessageExtend = "The element is set not strict. Skip writing if is invalid";
-            String defaultMessage = String.format("The method %s required a return of type < ? extendsBaseResultDetails> but found %s.", element, returnType);
+            String defaultMessage = String.format("The method %s required a return of type < ? extendsBaseResultDetails > but found %s.", element, returnType);
 
             if (!annotation.strict()) {
                 kind = Diagnostic.Kind.WARNING;
