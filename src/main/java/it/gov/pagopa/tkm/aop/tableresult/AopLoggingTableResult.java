@@ -34,6 +34,7 @@ public class AopLoggingTableResult {
 
     @Pointcut("@annotation(it.gov.pagopa.tkm.annotation.LoggingTableResult)")
     private void enableLoggingTableResult() {
+        //Do nothing because is a part of SPRING AOP
     }
 
     @Around("enableLoggingTableResult()")
@@ -43,7 +44,7 @@ public class AopLoggingTableResult {
         Tracer.SpanInScope ws = this.tracer.withSpan(span.start());
         LoggingTableResult declaredAnnotation = getLoggingTableResultAnnotation(joinPoint);
         String signatureName = joinPoint.getSignature().getName();
-        log.info(String.format("Start enableEnableLoggingTableResult %s", signatureName));
+        log.debug(String.format("Start saveResultOnTable %s", signatureName));
         Object proceed = null;
         try {
             span.tag("class", joinPoint.getTarget().getClass().getSimpleName());
@@ -73,16 +74,20 @@ public class AopLoggingTableResult {
             }
             BaseResultDetails baseResultDetails = (BaseResultDetails) proceed;
             String traceId = span.context().traceId();
+
+            String targetBatch = StringUtils.firstNonBlank(loggingTableResult.batchName(), signatureName);
+            String executedBy = StringUtils.firstNonBlank(System.getProperty("HOSTNAME"), System.getenv("COMPUTERNAME"));
             LoggingBatchResult loggingBatchResult = LoggingBatchResult.builder()
                     .executionTraceId(traceId)
                     .runDate(start)
                     .runOutcome(baseResultDetails.isSuccess())
                     .details(objectMapper.writeValueAsString(baseResultDetails))
-                    .targetBatch(StringUtils.firstNonBlank(loggingTableResult.batchName(), signatureName))
+                    .targetBatch(targetBatch)
                     .runDurationMillis(Instant.now().toEpochMilli() - start.toEpochMilli())
+                    .executedBy(executedBy)
                     .build();
-            log.info(loggingBatchResult);
             batchResultRepository.save(loggingBatchResult);
+            log.debug(loggingBatchResult);
         } catch (Exception e) {
             log.error(e);
         }

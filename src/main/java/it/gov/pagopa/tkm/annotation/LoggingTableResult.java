@@ -11,7 +11,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface LoggingTableResult {
-
     String batchName() default "";
 
     boolean strict() default true;
