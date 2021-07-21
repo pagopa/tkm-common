@@ -40,8 +40,11 @@ public class LoggingBatchResult {
     @Column(name = "RUN_DURATION_MILLIS", nullable = false)
     private long runDurationMillis;
 
-    @Column(name = "DETAILS")
+    @Column(name = "DETAILS", nullable = false)
     private String details;
+
+    @Column(name = "EXECUTED_BY")
+    private String executedBy;
 
     @PreUpdate
     @PrePersist
