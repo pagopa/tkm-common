@@ -27,7 +27,7 @@ stages:
       displayName: 'download settings.xml for Maven'
       name: settingsxml
       inputs:
-        secureFile: 'settings.xml'
+        secureFile: 'settings_v2.xml'
         retryCount: '2'
     - task: Maven@3
       displayName: Build and Deploy Artifacts
